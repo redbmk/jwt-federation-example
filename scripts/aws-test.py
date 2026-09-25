@@ -16,8 +16,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--profile', default='jwt-federation-example')
 parser.add_argument('--region', default='us-west-2')
 parser.add_argument('--stack', default='jwt-federation-example')
-parser.add_argument('--account', required=True)
 args = parser.parse_args()
+args.account = os.environ.get('AWS_ACCOUNT_ID', '')
+if len(args.account) != 12 or not args.account.isascii() or not args.account.isdigit():
+    raise SystemExit('Set AWS_ACCOUNT_ID to the intended 12-digit account ID; no requests made.')
 root = Path(__file__).resolve().parents[1]
 os.chdir(root)
 local = root / '.local'

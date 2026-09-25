@@ -2,3 +2,7 @@
 node_modules/
 *.tfstate*
 .terraform/
+.env
+.env.*
+!.env.example
+__pycache__/

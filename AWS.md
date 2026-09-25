@@ -1,5 +1,7 @@
 # AWS deployment and live verification
 
+For a standalone team report, see [AWS findings](reports/AWS-FINDINGS.md).
+
 Status: deployed and live-tested on September 25, 2026 in us-west-2. All 16 expected-outcome checks passed; future nbf was also rejected. See [observed results](results/AWS-RESULTS.md) and [machine-readable results](results/aws-results.json). The stack remains deployed.
 
 ## Enable the public issuer first
@@ -13,10 +15,11 @@ These must both return JSON:
 
 ## Deploy
 
-From the repository root, replace YOUR_ACCOUNT_ID with your intended 12-digit account ID:
+From the repository root, set AWS_ACCOUNT_ID locally to your intended 12-digit account ID. Do not commit its value:
 
 ```sh
-python3 scripts/aws-deploy.py --account YOUR_ACCOUNT_ID
+export AWS_ACCOUNT_ID="<your-account-id>"
+python3 scripts/aws-deploy.py
 ```
 
 Defaults are profile `jwt-federation-example` and region `us-west-2`; override with `--profile` and `--region`. The script verifies the active account and compares the published discovery/JWKS with local files before creating resources. All resources are managed in the `jwt-federation-example` CloudFormation stack.
@@ -34,7 +37,7 @@ There is no public Function URL, API Gateway, warm/provisioned capacity, schedul
 ## Run live tests
 
 ```sh
-python3 scripts/aws-test.py --account YOUR_ACCOUNT_ID
+python3 scripts/aws-test.py
 ```
 
 The local signing key must match the published JWKS. Test tokens are regenerated immediately before the run. IAM changes may take a short time to propagate; if the initial valid baseline fails, investigate the reported code and rerun after propagation. A failed baseline stops the test suite.

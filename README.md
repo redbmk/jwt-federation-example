@@ -1,6 +1,6 @@
 # Bring your own IdP: three-cloud proof of concept
 
-Status: AWS is deployed and live-tested; all 16 expected-outcome checks passed, with future nbf rejection also observed. See [AWS results](results/AWS-RESULTS.md) and [deployment/cleanup instructions](AWS.md). GCP, Azure, and the two-configured-issuer scenario remain pending.
+Status: AWS is deployed and live-tested; all 16 expected-outcome checks passed, with future nbf rejection also observed. See the [team AWS findings report](reports/AWS-FINDINGS.md), [AWS results](results/AWS-RESULTS.md) and [deployment/cleanup instructions](AWS.md). GCP, Azure, and the two-configured-issuer scenario remain pending.
 
 Start with [SETUP.md](SETUP.md) for account creation, installation, sign-in, and the division of work. The intended remote is `redbmk/jwt-federation-example`; its issuer will be `https://redbmk.github.io/jwt-federation-example`.
 

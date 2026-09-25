@@ -7,10 +7,12 @@ import subprocess
 import urllib.request
 
 p = argparse.ArgumentParser()
-p.add_argument('--account', required=True)
 p.add_argument('--profile', default='jwt-federation-example')
 p.add_argument('--region', default='us-west-2')
 args = p.parse_args()
+args.account = os.environ.get('AWS_ACCOUNT_ID', '')
+if len(args.account) != 12 or not args.account.isascii() or not args.account.isdigit():
+    raise SystemExit('Set AWS_ACCOUNT_ID to the intended 12-digit account ID; no requests made.')
 root = Path(__file__).resolve().parents[1]
 os.chdir(root)
 env = {k: v for k, v in os.environ.items() if not k.startswith('AWS_')}
