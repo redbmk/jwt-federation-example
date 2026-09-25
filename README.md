@@ -15,7 +15,22 @@ Public paths under `https://OWNER.github.io/REPO`:
 - `/.well-known/openid-configuration`
 - `/jwks.json`
 
-The exact issuer includes the repository path. Keep it identical in the token, discovery document, and cloud configuration. `.nojekyll` preserves the `.well-known` directory in branch-based Pages publishing. Publish only `docs/`, never the repository root or `.local/`.
+The exact issuer includes the repository path. Keep it identical in the token, discovery document, and cloud configuration. The Actions workflow uploads `docs/` directly, including `.well-known`; no Jekyll build runs. Publish only `docs/`, never the repository root or `.local/`.
+
+## Publish with GitHub Actions
+
+The signing key and public issuer files have been initialized for `redbmk/jwt-federation-example`. The key is local-only in `.local/private.pem`; do not run `init` again on this checkout. A fresh clone does not include the private key. Preserve the original key securely if you intend to keep minting tokens against the published JWKS.
+
+After pushing the public repository, open **Settings → Pages → Build and deployment → Source**, choose **GitHub Actions**, then open **Actions → Publish OIDC issuer to Pages → Run workflow**. Subsequent pushes to `main` publish automatically. If the first push ran before Pages was enabled, rerun it after selecting the source.
+
+The workflow tests the issuer, validates discovery and public keys, and uploads only `docs/`. It never generates a signing key or rotates keys in CI. No repository secrets are required. Its `id-token: write` permission is for GitHub's Pages deployment protocol, separate from our test issuer.
+
+Once deployed, verify:
+
+- https://redbmk.github.io/jwt-federation-example/.well-known/openid-configuration
+- https://redbmk.github.io/jwt-federation-example/jwks.json
+
+There is no home page; a 404 at the site root is expected. Live Pages deployment has not yet been verified.
 
 ## Run the local starter
 
@@ -23,8 +38,9 @@ Requires Node.js 22 or later; no third-party packages.
 
 ```sh
 npm test
-node issuer.mjs init https://OWNER.github.io/REPO
-node issuer.mjs mint https://OWNER.github.io/REPO byo-idp-poc
+# For a NEW issuer only; this checkout is already initialized:
+# node issuer.mjs init https://OWNER.github.io/REPO
+node issuer.mjs mint https://redbmk.github.io/jwt-federation-example byo-idp-poc
 ```
 
 `init` creates a local private key and public discovery/JWKS files. It refuses to overwrite an existing private key. `mint` writes 14 short-lived test tokens into `.local/tokens/`. Tokens expire after five minutes except deliberate time-negative cases. Regenerate just before a test. For Azure use `api://AzureADTokenExchange` as the audience; generating another suite replaces local token files.
@@ -89,8 +105,8 @@ For each case record the changed claims (no JWT), exchange status/error code, in
 
 ## Remaining implementation steps
 
-1. Select personal GitHub owner and cloud account/project/subscription; establish sign-in.
-2. Create a public repository, initialize the actual issuer, and publish `docs/` with Pages.
+1. Select cloud account/project/subscription; establish sign-in. GitHub owner is redbmk.
+2. Push this local repository to redbmk/jwt-federation-example and enable GitHub Actions as the Pages source. Public issuer files and the publishing workflow are ready.
 3. Verify both public URLs return the expected documents and key.
 4. Add infrastructure and exchange/invocation adapters for the selected accounts.
 5. Deploy one private hello-world endpoint per cloud and run the live matrix.

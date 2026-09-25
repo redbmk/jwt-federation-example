@@ -3,7 +3,7 @@
 Repository: `redbmk/jwt-federation-example` (public).
 Issuer: `https://redbmk.github.io/jwt-federation-example`.
 
-Recommended workflow: you install the command-line tools and complete browser sign-in, MFA, and any account/billing enrollment. I use those local sessions to create the repository, publish the public keys, provision the cloud resources, run tests, and document commands and results. No API keys or passwords need to be pasted into chat. Browser-only sign-in does not automatically sign in the command-line tools.
+Recommended workflow: you push the repository and complete browser sign-in, MFA, and any account/billing enrollment. GitHub Actions publishes the public keys; I use local cloud sessions to provision the cloud resources, run tests, and document commands and results. No API keys or passwords need to be pasted into chat. Browser-only sign-in does not automatically sign in the command-line tools.
 
 We can start with GitHub and whichever ONE cloud you can access first. You do not have to finish all three before we begin.
 
@@ -29,19 +29,20 @@ You can install only `gh` and the first cloud's tool initially. These commands i
 
 ## 2. GitHub
 
-Run:
+The local repository is ready at `~/code/jwt-federation-example`. Push it to a public `redbmk/jwt-federation-example` repository using your preferred Git workflow. GitHub CLI sign-in is optional if you already have another way to push.
 
-```sh
-gh auth login --hostname github.com --git-protocol https --web
-gh auth status
-gh api user --jq .login
-```
+After pushing:
 
-Sign in as **redbmk** and complete the browser authorization. The last command should print `redbmk`. If another account is active, use `gh auth switch --hostname github.com --user redbmk` after authenticating redbmk.
+1. Open the repository's **Settings → Pages**.
+2. Under **Build and deployment → Source**, choose **GitHub Actions**.
+3. Open **Actions → Publish OIDC issuer to Pages → Run workflow** on `main`. Rerun an earlier failed deployment if it started before Pages was enabled.
+4. Wait for the workflow to finish, then open both URLs:
+   - https://redbmk.github.io/jwt-federation-example/.well-known/openid-configuration
+   - https://redbmk.github.io/jwt-federation-example/jwks.json
 
-Tell me: **GitHub ready**. I will create the public remote, push this repository, configure Pages to publish `main:/docs`, and verify discovery and JWKS over HTTPS. You do not need to manually create the remote or Pages site.
+Subsequent pushes to `main` publish automatically. No GitHub Actions secrets are needed. The signing key has been generated locally and stays in ignored `.local/private.pem`; only public key material goes into `docs/`. Do not regenerate it in CI. A fresh clone will need the original private key to mint tokens that match the published JWKS.
 
-The signing key stays in ignored `.local/private.pem`; only public key material goes into `docs/`. GitHub Pages hosting and GitHub Actions' built-in OIDC issuer are different things. This experiment uses our Pages URL as the issuer.
+Tell me **Pages ready** when both URLs work. GitHub Pages hosting and GitHub Actions' built-in OIDC issuer are different things. This experiment uses our Pages URL as the issuer.
 
 ## 3. AWS
 
