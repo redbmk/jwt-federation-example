@@ -1,0 +1,76 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Personal JWT federation proof: public OIDC issuer, private Lambda, scoped invocation role, and denied control role.",
+  "Resources": {
+    "Provider": {
+      "Type": "AWS::IAM::OIDCProvider",
+      "Properties": {
+        "Url": "https://redbmk.github.io/jwt-federation-example",
+        "ClientIdList": ["byo-idp-poc"],
+        "Tags": [{"Key": "Project", "Value": "jwt-federation-example"}]
+      }
+    },
+    "ExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{"Effect": "Allow", "Principal": {"Service": "lambda.amazonaws.com"}, "Action": "sts:AssumeRole"}]
+        }
+      }
+    },
+    "Hello": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Runtime": "python3.13",
+        "Handler": "index.handler",
+        "MemorySize": 128,
+        "Timeout": 3,
+        "Role": {"Fn::GetAtt": ["ExecutionRole", "Arn"]},
+        "Code": {"ZipFile": "def handler(event, context):\n    return {'message': 'hello world', 'cloud': 'aws', 'request_id': context.aws_request_id}\n"},
+        "Tags": [{"Key": "Project", "Value": "jwt-federation-example"}]
+      }
+    },
+    "InvokerRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow", "Principal": {"Federated": {"Ref": "Provider"}},
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {"StringEquals": {
+              "redbmk.github.io/jwt-federation-example:aud": "byo-idp-poc",
+              "redbmk.github.io/jwt-federation-example:sub": "client:client-a:agent:agent-a"
+            }}
+          }]
+        },
+        "Policies": [{"PolicyName": "InvokeOnlyHello", "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{"Effect": "Allow", "Action": "lambda:InvokeFunction", "Resource": {"Fn::GetAtt": ["Hello", "Arn"]}}]
+        }}]
+      }
+    },
+    "DeniedControlRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow", "Principal": {"Federated": {"Ref": "Provider"}},
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {"StringEquals": {
+              "redbmk.github.io/jwt-federation-example:aud": "byo-idp-poc",
+              "redbmk.github.io/jwt-federation-example:sub": "client:client-a:agent:agent-a"
+            }}
+          }]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "FunctionArn": {"Value": {"Fn::GetAtt": ["Hello", "Arn"]}},
+    "InvokerRoleArn": {"Value": {"Fn::GetAtt": ["InvokerRole", "Arn"]}},
+    "DeniedRoleArn": {"Value": {"Fn::GetAtt": ["DeniedControlRole", "Arn"]}}
+  }
+}
