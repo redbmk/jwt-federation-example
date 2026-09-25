@@ -32,9 +32,28 @@ jobs:
       - name: Validate public files
         run: node scripts/validate-pages.mjs
       - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v4
+      # upload-pages-artifact excludes dot directories, including .well-known.
+      # Package the validated public directory explicitly to preserve discovery.
+      - name: Package public issuer including discovery
+        run: |
+          tar --directory docs -cvf "$RUNNER_TEMP/artifact.tar" .
+          tar -tf "$RUNNER_TEMP/artifact.tar" | grep -Fx './.well-known/openid-configuration'
+          tar -tf "$RUNNER_TEMP/artifact.tar" | grep -Fx './jwks.json'
+      - uses: actions/upload-artifact@v4
         with:
-          path: docs
+          name: github-pages
+          path: ${{ runner.temp }}/artifact.tar
+          retention-days: 1
+          if-no-files-found: error
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Verify published issuer files
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          for file in .well-known/openid-configuration jwks.json; do
+            curl --fail --silent --show-error --retry 5 --retry-all-errors --retry-delay 10 --max-time 20 \
+              "${PAGE_URL%/}/$file" -o "$RUNNER_TEMP/published.json"
+            cmp "docs/$file" "$RUNNER_TEMP/published.json"
+          done

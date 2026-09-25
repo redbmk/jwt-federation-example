@@ -1,6 +1,6 @@
 # AWS deployment and live verification
 
-Status: AWS login and CloudFormation template validation succeeded on September 24, 2026. No cloud resources have been deployed yet. The published issuer returned 404 and GitHub reported Pages was not enabled. Enable Pages and rerun its workflow before deployment.
+Status: AWS login and CloudFormation template validation succeeded on September 24, 2026. No cloud resources have been deployed yet. Pages now serves jwks.json, but discovery returned 404 because the original upload action excluded .well-known. The corrected workflow explicitly packages that directory and checks both URLs after deployment. Push the workflow fix before deploying AWS.
 
 ## Enable the public issuer first
 

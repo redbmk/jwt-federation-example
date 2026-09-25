@@ -23,7 +23,7 @@ The signing key and public issuer files have been initialized for `redbmk/jwt-fe
 
 After pushing the public repository, open **Settings → Pages → Build and deployment → Source**, choose **GitHub Actions**, then open **Actions → Publish OIDC issuer to Pages → Run workflow**. Subsequent pushes to `main` publish automatically. If the first push ran before Pages was enabled, rerun it after selecting the source.
 
-The workflow tests the issuer, validates discovery and public keys, and uploads only `docs/`. It never generates a signing key or rotates keys in CI. No repository secrets are required. Its `id-token: write` permission is for GitHub's Pages deployment protocol, separate from our test issuer.
+The workflow tests the issuer, validates discovery and public keys, and packages only `docs/` in a tar archive that preserves `.well-known`. It uses `upload-artifact` directly because `upload-pages-artifact` excludes dot directories. After deployment, it fetches both live documents and compares them to the committed files. It never generates a signing key or rotates keys in CI. No repository secrets are required. Its `id-token: write` permission is for GitHub's Pages deployment protocol, separate from our test issuer.
 
 Once deployed, verify:
 
