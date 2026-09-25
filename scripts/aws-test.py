@@ -22,8 +22,11 @@ root = Path(__file__).resolve().parents[1]
 os.chdir(root)
 local = root / '.local'
 local.mkdir(mode=0o700, exist_ok=True)
+last_error_message = None
 
 def call(parts, credentials=None, operator=False):
+    global last_error_message
+    last_error_message = None
     env = {k: v for k, v in os.environ.items() if not k.startswith('AWS_')}
     env.update(AWS_PAGER='', AWS_EC2_METADATA_DISABLED='true')
     command = ['aws', '--region', args.region, '--output', 'json', '--no-cli-pager']
@@ -40,6 +43,10 @@ def call(parts, credentials=None, operator=False):
     p = subprocess.run(command + parts, env=env, capture_output=True, text=True, timeout=90)
     if p.returncode:
         match = re.search(r'An error occurred \(([^)]+)\)', p.stderr)
+        # Keep the service explanation, not command arguments or credentials.
+        message = p.stderr.split('operation: ', 1)[-1].strip() if match else ''
+        message = re.sub(r'eyJ[\w-]+\.[\w-]+\.[\w-]+', '[JWT REDACTED]', message)
+        last_error_message = message[:1000] or None
         return None, match.group(1) if match else 'CLI_OR_NETWORK_ERROR'
     return json.loads(p.stdout) if p.stdout.strip() else {}, None
 
@@ -91,8 +98,13 @@ for name, expectation in list(expected.items()) + [('valid', 'allow')]:
     row = {'case': name if not (name == 'valid' and results) else 'valid_after_negatives', 'expected': expectation}
     if error:
         # Fetch failures and transient STS failures are not successful denials.
-        denial = error in {'AccessDenied', 'InvalidIdentityToken', 'ExpiredToken', 'IDPRejectedClaim'}
+        infrastructure_error = any(text in (last_error_message or '').lower() for text in [
+            'retrieve verification key', 'could not connect', 'could not be reached',
+            'communication', 'timed out', 'timeout', 'jwks', 'discovery'
+        ])
+        denial = not infrastructure_error and error in {'AccessDenied', 'InvalidIdentityToken', 'ExpiredToken', 'ExpiredTokenException', 'IDPRejectedClaim'}
         row.update(exchange='denied' if denial else 'error', code=error)
+        row['message'] = last_error_message
         row['pass'] = denial and expectation == 'deny'
         if error == 'InvalidIdentityToken':
             # Baselines bracket the negatives; retain the code for manual review.

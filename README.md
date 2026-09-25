@@ -1,6 +1,6 @@
 # Bring your own IdP: three-cloud proof of concept
 
-Status: local Git repository created; cloud deployment and live verification are pending. See [AWS.md](AWS.md) for the prepared AWS deployment and test commands. The GitHub remote has been pushed; Pages must be enabled before federation can run. Local tests prove signing behavior only.
+Status: AWS is deployed and live-tested; all 16 expected-outcome checks passed, with future nbf rejection also observed. See [AWS results](results/AWS-RESULTS.md) and [deployment/cleanup instructions](AWS.md). GCP, Azure, and the two-configured-issuer scenario remain pending.
 
 Start with [SETUP.md](SETUP.md) for account creation, installation, sign-in, and the division of work. The intended remote is `redbmk/jwt-federation-example`; its issuer will be `https://redbmk.github.io/jwt-federation-example`.
 

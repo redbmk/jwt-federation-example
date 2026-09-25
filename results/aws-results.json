@@ -1,0 +1,186 @@
+{
+  "timestamp": "2026-09-25T15:52:42.875764+00:00",
+  "region": "us-west-2",
+  "results": [
+    {
+      "case": "valid",
+      "expected": "allow",
+      "exchange": "allowed",
+      "invocation": {
+        "status": "allowed",
+        "body": {
+          "message": "hello world",
+          "cloud": "aws",
+          "request_id": "ad313ec8-88a9-4c32-84d8-5211708b0b5e"
+        }
+      },
+      "pass": true
+    },
+    {
+      "case": "wrong_issuer",
+      "expected": "deny",
+      "exchange": "denied",
+      "code": "InvalidIdentityToken",
+      "message": "The web identity token provided could not be validated. See the AssumeRoleWithWebIdentity documentation for requirements.",
+      "pass": true,
+      "note": "Review alongside successful baselines; may also indicate issuer/JWKS configuration errors."
+    },
+    {
+      "case": "wrong_audience",
+      "expected": "deny",
+      "exchange": "denied",
+      "code": "InvalidIdentityToken",
+      "message": "The web identity token provided could not be validated. See the AssumeRoleWithWebIdentity documentation for requirements.",
+      "pass": true,
+      "note": "Review alongside successful baselines; may also indicate issuer/JWKS configuration errors."
+    },
+    {
+      "case": "other_client",
+      "expected": "deny",
+      "exchange": "denied",
+      "code": "AccessDenied",
+      "message": "Not authorized to perform sts:AssumeRoleWithWebIdentity",
+      "pass": true
+    },
+    {
+      "case": "other_agent",
+      "expected": "deny",
+      "exchange": "denied",
+      "code": "AccessDenied",
+      "message": "Not authorized to perform sts:AssumeRoleWithWebIdentity",
+      "pass": true
+    },
+    {
+      "case": "changed_client_claim_only",
+      "expected": "allow",
+      "exchange": "allowed",
+      "invocation": {
+        "status": "allowed",
+        "body": {
+          "message": "hello world",
+          "cloud": "aws",
+          "request_id": "9c736c6d-c565-4c5b-be91-6c7cc1db9da3"
+        }
+      },
+      "pass": true
+    },
+    {
+      "case": "changed_agent_claim_only",
+      "expected": "allow",
+      "exchange": "allowed",
+      "invocation": {
+        "status": "allowed",
+        "body": {
+          "message": "hello world",
+          "cloud": "aws",
+          "request_id": "283e5300-afb4-451c-8892-344de88920b3"
+        }
+      },
+      "pass": true
+    },
+    {
+      "case": "missing_client_claim",
+      "expected": "allow",
+      "exchange": "allowed",
+      "invocation": {
+        "status": "allowed",
+        "body": {
+          "message": "hello world",
+          "cloud": "aws",
+          "request_id": "bb32f0e8-293e-4fc1-b3e6-c6710a69377e"
+        }
+      },
+      "pass": true
+    },
+    {
+      "case": "missing_agent_claim",
+      "expected": "allow",
+      "exchange": "allowed",
+      "invocation": {
+        "status": "allowed",
+        "body": {
+          "message": "hello world",
+          "cloud": "aws",
+          "request_id": "ef54f19b-a2eb-48dd-9c46-ac9fa2a9c117"
+        }
+      },
+      "pass": true
+    },
+    {
+      "case": "missing_subject",
+      "expected": "deny",
+      "exchange": "denied",
+      "code": "InvalidIdentityToken",
+      "message": "Missing a required claim: sub",
+      "pass": true,
+      "note": "Review alongside successful baselines; may also indicate issuer/JWKS configuration errors."
+    },
+    {
+      "case": "expired",
+      "expected": "deny",
+      "exchange": "denied",
+      "code": "ExpiredTokenException",
+      "message": "Token expired: current date/time 1790351258 must be before the expiration date/time 1790347949",
+      "pass": true
+    },
+    {
+      "case": "invalid_signature",
+      "expected": "deny",
+      "exchange": "denied",
+      "code": "InvalidIdentityToken",
+      "message": "The web identity token provided could not be validated. See the AssumeRoleWithWebIdentity documentation for requirements.",
+      "pass": true,
+      "note": "Review alongside successful baselines; may also indicate issuer/JWKS configuration errors."
+    },
+    {
+      "case": "future_not_before",
+      "expected": "observe",
+      "exchange": "denied",
+      "code": "InvalidIdentityToken",
+      "message": "Token not yet valid: current date/time 1790351859 must be after or equal to the not-before date/time 1790355149",
+      "pass": null,
+      "note": "Review alongside successful baselines; may also indicate issuer/JWKS configuration errors."
+    },
+    {
+      "case": "wrong_authorized_party",
+      "expected": "deny",
+      "exchange": "denied",
+      "code": "InvalidIdentityToken",
+      "message": "The web identity token provided could not be validated. See the AssumeRoleWithWebIdentity documentation for requirements.",
+      "pass": true,
+      "note": "Review alongside successful baselines; may also indicate issuer/JWKS configuration errors."
+    },
+    {
+      "case": "valid_after_negatives",
+      "expected": "allow",
+      "exchange": "allowed",
+      "invocation": {
+        "status": "allowed",
+        "body": {
+          "message": "hello world",
+          "cloud": "aws",
+          "request_id": "e06282ae-fb19-4a72-bc54-69d92a243a7c"
+        }
+      },
+      "pass": true
+    },
+    {
+      "case": "valid_identity_without_invoke_permission",
+      "exchange": "allowed",
+      "code": null,
+      "invocation": {
+        "status": "denied",
+        "code": "AccessDeniedException"
+      },
+      "pass": true
+    },
+    {
+      "case": "unsigned_invocation",
+      "invocation": {
+        "status": "denied",
+        "code": "MissingAuthenticationTokenException"
+      },
+      "pass": true
+    }
+  ]
+}

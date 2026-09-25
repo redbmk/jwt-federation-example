@@ -1,6 +1,6 @@
 # AWS deployment and live verification
 
-Status: AWS login and CloudFormation template validation succeeded on September 24, 2026. No cloud resources have been deployed yet. Pages now serves jwks.json, but discovery returned 404 because the original upload action excluded .well-known. The corrected workflow explicitly packages that directory and checks both URLs after deployment. Push the workflow fix before deploying AWS.
+Status: deployed and live-tested on September 25, 2026 in us-west-2. All 16 expected-outcome checks passed; future nbf was also rejected. See [observed results](results/AWS-RESULTS.md) and [machine-readable results](results/aws-results.json). The stack remains deployed.
 
 ## Enable the public issuer first
 
@@ -41,7 +41,7 @@ The local signing key must match the published JWKS. Test tokens are regenerated
 
 The operator profile only reads stack outputs and the current account. Token exchanges are unsigned AWS requests containing our external JWT. Lambda calls use only the credentials returned by STS; the runner clears inherited AWS credentials and disables profile/metadata fallback for those calls.
 
-Results are written to ignored `.local/aws-results.json`. Tokens and AWS temporary credentials are not included. The runner records Lambda request IDs for successful invocations. STS errors are recorded as codes, without raw responses or request IDs. Provider communication/unknown CLI failures are inconclusive. Review InvalidIdentityToken cases alongside both successful baselines because that code can also indicate issuer configuration problems.
+Results are written to ignored `.local/aws-results.json`. Tokens and AWS temporary credentials are not included. The runner records Lambda request IDs for successful invocations. STS errors are recorded as codes and service explanations with JWT redaction, without credential responses or STS request IDs. Provider communication/unknown CLI failures are inconclusive. Review InvalidIdentityToken cases alongside both successful baselines because that code can also indicate issuer configuration problems.
 
 The matrix distinguishes changing `client_id` or `agent_id` alone from changing the enforced subject. The custom-claim-only mutations are expected to succeed on AWS: those fields are not automatically IAM condition keys. Expiry, signature, audience, issuer, subject and `azp` mutations are also probed; future `nbf` is recorded as an observation without assuming an outcome. Finally, valid federation through the control role must fail invocation, and an unsigned invocation must fail.
 
